@@ -99,3 +99,7 @@ WHERE orders.order_date >= CURRENT_DATE - INTERVAL '1 month'
 HAVING Sum(total_amount) > 500;
 limit 5;
 ```
+
+## Could we apply denormalization ?.
+
+yes, we can by adding product name at order_details table
