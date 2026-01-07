@@ -103,3 +103,63 @@ limit 5;
 ## Could we apply denormalization ?.
 
 yes, we can by adding product name at order_details table
+
+## Write a SQL query to search for all products with the word "camera" in either the product name or description.
+
+```sql
+select * from products where product_name LIKE '%camera%' or description LIKE '%camera%';
+```
+
+##
+
+```sql
+INSERT INTO "Ecommerce".sale_history_log(customer_id,
+operation,order_id,product_id,total_amount,order_date)
+values (
+NEW.customer_id,
+"insert",
+NEW.order_id,
+od.product_id,
+New.total_amount,
+NEW.order_date
+);
+RETURN NEW;
+end;
+$$ LANGUAGE plpgsql;
+
+
+create or replace trigger sale_history_trigger
+after insert on "Ecommerce".orders
+for each row
+execute function "Ecommerce".create_sale_history();
+```
+
+## Lock quantity
+
+``sql
+BEGIN
+
+select quantity from products where product_id=22 for update
+
+END
+``
+
+## LOCK the row
+
+``sql
+BEGIN
+
+select \* from products where product_id=22 for update
+
+END
+``
+
+## The Optimization Task
+
+| #   | Query                                                                                                                                                                                                                                              | Execution Time (Before Optimization) | Optimization Technique                                                                                                                                     | Query Rewrite | Execution Time (After Optimization) |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | ----------------------------------- |
+| 5   | `SELECT category_id, COUNT(product_id) FROM products GROUP BY category_id;`                                                                                                                                                                        | 1080 ms                              | `CREATE INDEX idx_category_count ON products(product_id, category_id);`                                                                                    | Same          | 815 ms                              |
+| 6   | `SELECT c.first_name, c.last_name, c.customer_id, SUM(orders.total_amount) AS total_spent FROM customers c JOIN orders ON c.customer_id = orders.customer_id GROUP BY c.customer_id, c.first_name, c.last_name ORDER BY total_spent DESC LIMIT 5;` | 10626.086 ms                         | `CREATE INDEX idx_orders_customer_id ON orders(customer_id, order_id);`<br>`CREATE INDEX idx_first_last ON customers(customer_id, first_name, last_name);` | Same          | 9399 ms                             |
+| 7   | `SELECT c.first_name, c.last_name, o.order_id, o.order_date FROM orders o JOIN customers c ON c.customer_id = o.customer_id ORDER BY o.order_date DESC LIMIT 1000;`                                                                                | 2509.168 ms                          | `CREATE INDEX idx_order_date ON orders(order_date);`                                                                                                       | Same          | 1.876 ms                            |
+| 8   | `EXPLAIN ANALYZE SELECT * FROM products p WHERE p.stock_quantity < 10;`                                                                                                                                                                            | 35 ms                                | Partial Index<br>`CREATE INDEX idx_stock_quantity ON products(stock_quantity) WHERE stock_quantity < 10;`                                                  | Same          | 21.396 ms                           |
+| 9   | `EXPLAIN ANALYZE SELECT p.product_name, p.category_id, SUM(od.unit_price * od.quantity) AS category_revenue FROM order_details od JOIN products p ON p.product_id = od.product_id GROUP BY p.category_id, p.product_name;`                         | 17217.590 ms                         | Expression Index<br>`CREATE INDEX idx_od_pr_product_id ON order_details((quantity * unit_price) DESC) INCLUDE (product_id);`                               | Same          | 24746.183 ms                        |
