@@ -18,7 +18,7 @@
 
 ### Browsing The generated restaurant
 
-- Each restaurant has logo and name
+- Each restaurant has logo and namesss
 - Each restaurant has its menu
 
 ### In the restaurant details page
