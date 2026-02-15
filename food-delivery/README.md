@@ -18,7 +18,7 @@
 
 ### Browsing The generated restaurant
 
-- Each restaurant has logo and namesss
+- Each restaurant has logo and name
 - Each restaurant has its menu
 
 ### In the restaurant details page
@@ -68,3 +68,70 @@
 ### Out of stock feature
 
 - Handle out of stock scenario
+
+---
+
+# API's Signatures
+
+## Cart Management
+
+| Signature                        | Input                  | Output                                                                            |
+| -------------------------------- | ---------------------- | --------------------------------------------------------------------------------- |
+| /api/v1/cart/add                 | {customerId,cartItems} | 200 created<br>400 bad request (wrong in data)<br>409 conflict with existing cart |
+| /api/v1/cart/remove/{cartItemId} | -                      | 200 updated                                                                       |
+| /api/v1/cart/update/{cartItemId} | {cartItems[]}          |                                                                                   |
+| /api/v1/cart/get/{customerId}    | -                      |                                                                                   |
+
+## Order Management
+
+| Signature                        | Input                      | Output                                                                             |
+| -------------------------------- | -------------------------- | ---------------------------------------------------------------------------------- |
+| /api/v1/order/add                | {customerId, cartItems []} | 201 created <br>400 bad request (wrong in data)<br>409 conflict with existing cart |
+| /api/v1/order/remove/{orderId}   | -                          | 200                                                                                |
+| /api/v1/cart/update/{cartItemId} | {cartItems[]}              | 200 OK<br>400 bad request<br>404 not found this order<br>403 Forbidden             |
+| /api/v1/cart/get/{customerId}    | -                          | 200 OK<br>400 bad request<br>404 not found                                         |
+
+## Login
+
+| Signature                    | Input         | Output                                                       |
+| ---------------------------- | ------------- | ------------------------------------------------------------ |
+| /api/v1/user/register        | {user_info[]} | 201 created <br>400 bad request (wrong in data)              |
+| /api/v1/user/remove/{userId} | -             | 200 OK<br>404 not found                                      |
+| /api/v1/user/update/{userId} | {user_info[]} | 200 OK<br>400 bad request<br>404 not found <br>403 Forbidden |
+| /api/v1/user/login           | {user_info[]} | 200 OK<br>400 bad request<br>404 not found                   |
+|                              |               |                                                              |
+
+## Restaurant Management
+
+| Signature                                   | Input                                                | Output                                                             |
+| ------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------ |
+| `POST /api/v1/restaurants`                  | `{ name, address, phone, cuisineType, openingHours}` | **201 Created** <br>400 Bad Request <br>409 Conflict               |
+| `GET /api/v1/restaurants`                   | `-`                                                  | 200 OK <br>400 Bad Request                                         |
+| `GET /api/v1/restaurants/{restaurantId}`    | `-`                                                  | 200 OK <br>404 Not Found                                           |
+| `PUT /api/v1/restaurants/{restaurantId}`    | `{ name, address, phone, cuisineType }`              | 200 OK <br>400 Bad Request <br>404 Not Found <br>**403 Forbidden** |
+| `DELETE /api/v1/restaurants/{restaurantId}` | `-`                                                  | 200 OK <br>404 Not Found <br>**403 Forbidden**                     |
+
+## Menu Management
+
+| Signature                                                                | Input                                 | Output                                                                  |
+| ------------------------------------------------------------------------ | ------------------------------------- | ----------------------------------------------------------------------- |
+| `POST /api/v1/restaurants/menu/categories/{restaurantId}`                | `{ name, description, displayOrder }` | 201 Created <br>400 Bad Request <br>404 Not Found <br>**403 Forbidden** |
+| `GET /api/v1/restaurants/menu/categories/{restaurantId}`                 | `-`                                   | 200 OK <br>404 Not Found                                                |
+| `PUT /api/v1/restaurants/{restaurantId}/menu/categories/{categoryId}`    | `{ name, description, displayOrder }` | 200 OK <br>400 Bad Request <br>404 Not Found <br>403 Forbidden          |
+| `DELETE /api/v1/restaurants/menu/categories/{restaurantId}/{categoryId}` | `-`                                   | 200 OK <br>**409 Conflict**  <br>404 Not Found                          |
+
+## Transaction Management
+
+| Signature                                               | Input | Output                                                             |
+| ------------------------------------------------------- | ----- | ------------------------------------------------------------------ |
+| `GET /api/v1/transactions/{transactionId}/{customerId}` | -     | 200 Ok <br>400 Bad Request <br>404 Not Found <br>**403 Forbidden** |
+| GET /api/v1/restaurants/{restaurantId}/transactions     |       | 200 Ok <br>400 Bad Request <br>404 Not Found <br>**403 Forbidden** |
+
+## Payment Management
+
+| Signature                                          | Input            | Output                                                             |
+| -------------------------------------------------- | ---------------- | ------------------------------------------------------------------ |
+| `GET /api/v1/payment/{transactionId}/{customerId}` | {card_details[]} | 200 Ok <br>400 Bad Request <br>404 Not Found <br>**403 Forbidden** |
+| POST /api/v1/users/payment-methods/{userId}        |                  | 200 Ok                                                             |
+| GET /api/v1/users/{userId}/payment-methods         |                  | 200 Ok                                                             |
+| DELETE /api/v1/payment-methods/{methodId}          |                  | 200 Ok <br>404 NO FOUND                                            |
